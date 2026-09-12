@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>報價單管理系統 - 鼎盛智慧科技</title>
+  <meta name="description" content="具備RWD響應式設計之純前端報價單管理系統，支援客戶、廠商、產品及報價單之增刪查改與即時關聯試算。" />
+  <meta property="og:title" content="報價單管理系統 - 鼎盛智慧科技" />
+  <meta property="og:description" content="具備RWD響應式設計之純前端報價單管理系統，支援客戶、廠商、產品及報價單之增刪查改與即時關聯試算。" />
+  <meta property="og:type" content="website" />
+  
+  <!-- 本地端資源引入 (遵守無 CDN 與本地資源原則) -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+  <!-- ====================================================================
+       1. 頂部企業導覽列 (公司LOGO、系統標題與主選單)
+       ==================================================================== -->
+  <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2">
+    <div class="container-fluid px-lg-4">
+      <!-- 公司 LOGO 與系統標題 -->
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <span class="brand-logo-icon">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </span>
+        <div class="d-flex flex-column">
+          <span class="fs-5 fw-bold lh-1 text-white">鼎盛智慧科技</span>
+          <span class="text-white-50" style="font-size: 0.725rem; letter-spacing: 0.5px;">報價單管理系統 (QMS)</span>
+        </div>
+      </a>
+
+      <!-- 手機版漢堡選單切換鈕 -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="切換選單">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- 導覽功能分頁與系統操作按鈕 -->
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- 主功能選單分頁 -->
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 nav-pills" id="systemTab" role="tablist">
+          <li class="nav-item me-1" role="presentation">
+            <button class="nav-link active text-white" id="tab-quotations" data-bs-toggle="pill" data-bs-target="#pane-quotations" type="button" role="tab" aria-selected="true">
+              <i class="fa-solid fa-file-lines me-1"></i>報價單管理
+            </button>
+          </li>
+          <li class="nav-item me-1" role="presentation">
+            <button class="nav-link text-white" id="tab-customers" data-bs-toggle="pill" data-bs-target="#pane-customers" type="button" role="tab" aria-selected="false">
+              <i class="fa-solid fa-users me-1"></i>客戶管理
+            </button>
+          </li>
+          <li class="nav-item me-1" role="presentation">
+            <button class="nav-link text-white" id="tab-vendors" data-bs-toggle="pill" data-bs-target="#pane-vendors" type="button" role="tab" aria-selected="false">
+              <i class="fa-solid fa-truck-field me-1"></i>廠商管理
+            </button>
+          </li>
+          <li class="nav-item me-1" role="presentation">
+            <button class="nav-link text-white" id="tab-products" data-bs-toggle="pill" data-bs-target="#pane-products" type="button" role="tab" aria-selected="false">
+              <i class="fa-solid fa-boxes-stacked me-1"></i>產品管理
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link text-white-50" id="tab-transactions" data-bs-toggle="pill" data-bs-target="#pane-transactions" type="button" role="tab" aria-selected="false">
+              <i class="fa-solid fa-handshake me-1"></i>交易管理
+              <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">規劃中</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- 右側快速操作按鈕 -->
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+          <button id="resetDemoDataBtn" class="btn btn-sm btn-outline-light" title="恢復初始示範資料">
+            <i class="fa-solid fa-rotate-right me-1"></i>重設示範資料
+          </button>
+          <button class="btn btn-sm btn-primary shadow-sm" onclick="openQuotationModal()">
+            <i class="fa-solid fa-plus me-1"></i>新增報價單
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====================================================================
+       2. 系統主體內容區 (頂部概況指標與各分頁內容)
+       ==================================================================== -->
+  <main class="container-fluid px-lg-4 py-3">
+
+    <!-- 頂部概況數據卡片 (4大指標 - 全面採用 Font Awesome) -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card stat-card p-3 shadow-sm border-0 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-medium">累計報價總額</div>
+              <h4 id="statQuotationAmount" class="fw-bold text-primary mb-0 mt-1">NT$ 0</h4>
+            </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card stat-card p-3 shadow-sm border-0 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-medium">報價單數</div>
+              <h4 id="statQuotationCount" class="fw-bold text-dark mb-0 mt-1">0</h4>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card stat-card p-3 shadow-sm border-0 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-medium">客戶夥伴</div>
+              <h4 id="statCustomerCount" class="fw-bold text-dark mb-0 mt-1">0</h4>
+            </div>
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card stat-card p-3 shadow-sm border-0 h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-medium">架上產品 / 供應商</div>
+              <div class="d-flex align-items-baseline gap-2 mt-1">
+                <h4 id="statProductCount" class="fw-bold text-dark mb-0">0</h4>
+                <small class="text-muted">/ <span id="statVendorCount">0</span> 家</small>
+              </div>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 頁籤主要內容區 (所有列表頁風格全面對齊客戶列表標準) -->
+    <div class="tab-content" id="systemTabContent">
+
+      <!-- ==============================================================
+           分頁 1: 報價單管理 (Quotation Management)
+           ============================================================== -->
+      <div class="tab-pane fade show active" id="pane-quotations" role="tabpanel">
+        <div class="card table-card border-0 shadow-sm mb-4">
+          <!-- 標題與操作欄 -->
+          <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="fw-bold text-dark mb-0">
+                <i class="fa-solid fa-file-lines text-primary me-2"></i>報價單列表
+              </h5>
+              <span id="quotationCountBadge" class="badge bg-secondary-subtle text-secondary rounded-pill">0 筆</span>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <!-- 狀態過濾 -->
+              <select id="filterQuotationStatus" class="form-select form-select-sm" style="width: 130px;">
+                <option value="">所有狀態</option>
+                <option value="草稿">草稿</option>
+                <option value="已送出">已送出</option>
+                <option value="已確認">已確認</option>
+              </select>
+              <!-- 搜尋框 -->
+              <div class="input-group input-group-sm" style="width: 240px;">
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" id="quotationSearchInput" class="form-control border-start-0" placeholder="搜尋單號/客戶/人員...">
+              </div>
+              <!-- 新增按鈕 -->
+              <button class="btn btn-sm btn-primary" onclick="openQuotationModal()">
+                <i class="fa-solid fa-plus me-1"></i>建立新報價單
+              </button>
+            </div>
+          </div>
+
+          <!-- 桌機版表格 -->
+          <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 145px;">報價單號</th>
+                  <th>客戶名稱</th>
+                  <th style="width: 125px;">報價日期</th>
+                  <th style="width: 140px;">業務代表</th>
+                  <th style="width: 95px;">狀態</th>
+                  <th style="width: 140px;">總價合計</th>
+                  <th class="text-end" style="width: 210px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="quotationTableBody">
+                <!-- 由 JavaScript 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 手機版卡片視圖 (RWD) -->
+          <div id="quotationMobileCards" class="d-md-none p-3">
+            <!-- 由 JavaScript 動態渲染 -->
+          </div>
+
+          <!-- 無資料狀態 -->
+          <div id="quotationEmptyState" class="text-center py-5 d-none">
+            <i class="fa-solid fa-folder-open fa-3x text-muted mb-3 opacity-50"></i>
+            <p class="text-muted mb-2">查無任何符合條件的報價單資料</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="openQuotationModal()">立即建立第一張報價單</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           分頁 2: 客戶管理 (Customer Management)
+           ============================================================== -->
+      <div class="tab-pane fade" id="pane-customers" role="tabpanel">
+        <div class="card table-card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="fw-bold text-dark mb-0">
+                <i class="fa-solid fa-users text-primary me-2"></i>客戶資料列表
+              </h5>
+              <span id="customerCountBadge" class="badge bg-secondary-subtle text-secondary rounded-pill">0 筆</span>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <div class="input-group input-group-sm" style="width: 240px;">
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" id="customerSearchInput" class="form-control border-start-0" placeholder="搜尋名稱/窗口/統編/電話...">
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="openCustomerModal()">
+                <i class="fa-solid fa-user-plus me-1"></i>新增客戶
+              </button>
+            </div>
+          </div>
+
+          <!-- 列表無地址欄位，保持畫面清爽 -->
+          <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">客戶代碼</th>
+                  <th>公司名稱</th>
+                  <th style="width: 150px;">聯絡窗口</th>
+                  <th style="width: 190px;">聯絡方式</th>
+                  <th style="width: 100px;">統一編號</th>
+                  <th style="width: 120px;">付款條件</th>
+                  <th class="text-end" style="width: 180px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="customerTableBody">
+                <!-- 由 JavaScript 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="customerMobileCards" class="d-md-none p-3">
+            <!-- 由 JavaScript 動態渲染 -->
+          </div>
+
+          <div id="customerEmptyState" class="text-center py-5 d-none">
+            <i class="fa-solid fa-user-slash fa-3x text-muted mb-3 opacity-50"></i>
+            <p class="text-muted mb-2">查無任何客戶資料</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="openCustomerModal()">立即新增客戶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           分頁 3: 廠商管理 (Vendor Management)
+           ============================================================== -->
+      <div class="tab-pane fade" id="pane-vendors" role="tabpanel">
+        <div class="card table-card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="fw-bold text-dark mb-0">
+                <i class="fa-solid fa-truck-field text-primary me-2"></i>廠商與供應商列表
+              </h5>
+              <span id="vendorCountBadge" class="badge bg-secondary-subtle text-secondary rounded-pill">0 筆</span>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <div class="input-group input-group-sm" style="width: 240px;">
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" id="vendorSearchInput" class="form-control border-start-0" placeholder="搜尋廠商/窗口/統編/電話...">
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="openVendorModal()">
+                <i class="fa-solid fa-plus me-1"></i>新增廠商
+              </button>
+            </div>
+          </div>
+
+          <!-- 列表無地址欄位，保持畫面清爽 -->
+          <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">廠商代碼</th>
+                  <th>公司名稱</th>
+                  <th style="width: 150px;">聯絡窗口</th>
+                  <th style="width: 190px;">聯絡方式</th>
+                  <th style="width: 100px;">統一編號</th>
+                  <th style="width: 120px;">付款條件</th>
+                  <th class="text-end" style="width: 180px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="vendorTableBody">
+                <!-- 由 JavaScript 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="vendorMobileCards" class="d-md-none p-3">
+            <!-- 由 JavaScript 動態渲染 -->
+          </div>
+
+          <div id="vendorEmptyState" class="text-center py-5 d-none">
+            <i class="fa-solid fa-truck-ramp-box fa-3x text-muted mb-3 opacity-50"></i>
+            <p class="text-muted mb-2">查無任何廠商資料</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="openVendorModal()">立即新增廠商</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           分頁 4: 產品管理 (Product Management)
+           ============================================================== -->
+      <div class="tab-pane fade" id="pane-products" role="tabpanel">
+        <div class="card table-card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="fw-bold text-dark mb-0">
+                <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>產品與庫存列表
+              </h5>
+              <span id="productCountBadge" class="badge bg-secondary-subtle text-secondary rounded-pill">0 筆</span>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <!-- 廠商篩選 -->
+              <select id="filterProductSupplier" class="form-select form-select-sm" style="width: 160px;">
+                <option value="">所有供應商</option>
+              </select>
+              <div class="input-group input-group-sm" style="width: 240px;">
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" id="productSearchInput" class="form-control border-start-0" placeholder="搜尋產品名稱/廠牌/規格...">
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="openProductModal()">
+                <i class="fa-solid fa-box-open me-1"></i>新增產品
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">產品代碼</th>
+                  <th style="width: 60px;">縮圖</th>
+                  <th>產品名稱 / 規格</th>
+                  <th style="width: 150px;">供應商</th>
+                  <th style="width: 110px;">成本</th>
+                  <th style="width: 120px;">建議售價</th>
+                  <th style="width: 100px;">庫存</th>
+                  <th class="text-end" style="width: 180px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <!-- 由 JavaScript 動態渲染 -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="productMobileCards" class="d-md-none p-3">
+            <!-- 由 JavaScript 動態渲染 -->
+          </div>
+
+          <div id="productEmptyState" class="text-center py-5 d-none">
+            <i class="fa-solid fa-box-open fa-3x text-muted mb-3 opacity-50"></i>
+            <p class="text-muted mb-2">查無任何產品資料</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="openProductModal()">立即新增產品</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           分頁 5: 交易管理 (規劃說明)
+           ============================================================== -->
+      <div class="tab-pane fade" id="pane-transactions" role="tabpanel">
+        <div class="card border-0 shadow-sm p-4 p-md-5 text-center bg-white">
+          <div class="mx-auto mb-3" style="width: 64px; height: 64px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
+            <i class="fa-solid fa-handshake"></i>
+          </div>
+          <h4 class="fw-bold text-dark">交易管理模組 (規劃中)</h4>
+          <p class="text-muted mx-auto" style="max-width: 520px;">
+            依專題需求規範，本次主要實作四大核心模組（客戶管理、廠商管理、產品管理、報價單管理）。後續交易履約、訂單轉換、出貨驗收與帳款沖銷功能已納入第二階段開發時程！
+          </p>
+          <div class="mt-3">
+            <button class="btn btn-primary" onclick="bootstrap.Tab.getInstance(document.getElementById('tab-quotations')).show()">
+              <i class="fa-solid fa-arrow-left me-1"></i>返回報價單管理
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ====================================================================
+       3. 模態視窗與彈跳表單區 (Modals - 全面配置 modal-dialog-scrollable)
+       ==================================================================== -->
+
+  <!-- (A) 客戶 新增/編輯 Modal (含 scrollable 與窗口英文名、先付款後出貨) -->
+  <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark" id="customerModalTitle">新增客戶</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="customerForm" novalidate onsubmit="event.preventDefault(); saveCustomer();">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">客戶代碼</label>
+                <input type="text" id="customerIdInput" class="form-control form-control-sm bg-light" readonly>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label small fw-bold">公司名稱<span class="required-star">*</span></label>
+                <input type="text" id="custCompanyName" class="form-control form-control-sm" required placeholder="例：聯鼎資訊科技股份有限公司">
+                <div class="invalid-feedback">請輸入公司名稱 (必填)</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">公司英文名稱</label>
+                <input type="text" id="custEnglishName" class="form-control form-control-sm" placeholder="例：Apex InfoTech Corp.">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">統一編號 (統編 8 碼)<span class="required-star">*</span></label>
+                <input type="text" id="custTaxId" class="form-control form-control-sm" required pattern="\d{8}" maxlength="8" placeholder="例：84729103">
+                <div class="invalid-feedback">請輸入正確 8 碼統一編號數字 (必填)</div>
+              </div>
+
+              <!-- 窗口中文名與窗口英文名 -->
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">聯絡窗口姓名<span class="required-star">*</span></label>
+                <input type="text" id="custContactPerson" class="form-control form-control-sm" required placeholder="例：林志豪">
+                <div class="invalid-feedback">請輸入聯絡窗口姓名 (必填)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">聯絡窗口英文名</label>
+                <input type="text" id="custContactPersonEn" class="form-control form-control-sm" placeholder="例：David Lin">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">部門</label>
+                <input type="text" id="custDepartment" class="form-control form-control-sm" placeholder="例：資訊技術處">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">職稱</label>
+                <input type="text" id="custJobTitle" class="form-control form-control-sm" placeholder="例：資深經理">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">電話<span class="required-star">*</span></label>
+                <input type="text" id="custPhone" class="form-control form-control-sm" required placeholder="例：02-2788-9901">
+                <div class="invalid-feedback">請輸入聯絡電話 (必填)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">電子郵件 (Email)<span class="required-star">*</span></label>
+                <input type="email" id="custEmail" class="form-control form-control-sm" required placeholder="例：service@company.com">
+                <div class="invalid-feedback">請輸入正確格式之電子郵件 (必填)</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">付款條件<span class="required-star">*</span></label>
+                <select id="custPaymentTerms" class="form-select form-select-sm" required>
+                  <option value="月結30天">月結30天</option>
+                  <option value="月結60天">月結60天</option>
+                  <option value="先付款後出貨">先付款後出貨</option>
+                  <option value="貨到付款">貨到付款</option>
+                  <option value="訂金30% 尾款70%">訂金30% 尾款70%</option>
+                  <option value="電匯現結">電匯現結</option>
+                  <option value="現金票據">現金票據</option>
+                </select>
+                <div class="invalid-feedback">請選擇付款條件</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">通訊住址<span class="required-star">*</span></label>
+                <input type="text" id="custAddress" class="form-control form-control-sm" required placeholder="例：台北市南港區園區街 3 號 8 樓">
+                <div class="invalid-feedback">請輸入通訊住址 (必填)</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">備註</label>
+                <textarea id="custNotes" class="form-control form-control-sm" rows="2" placeholder="特別配合事項或公司記錄..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer bg-light px-0 pb-0 mt-4">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i>儲存客戶資料</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 客戶 明細檢視 Modal (含 scrollable) -->
+  <div class="modal fade" id="customerDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-id-card me-2 text-primary"></i>客戶詳細資料</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="customerDetailContent">
+          <!-- 動態填充 -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- (B) 廠商 新增/編輯 Modal (含 scrollable 與窗口英文名、先付款後出貨) -->
+  <div class="modal fade" id="vendorModal" tabindex="-1" aria-labelledby="vendorModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark" id="vendorModalTitle">新增廠商</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="vendorForm" novalidate onsubmit="event.preventDefault(); saveVendor();">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">廠商代碼</label>
+                <input type="text" id="vendorIdInput" class="form-control form-control-sm bg-light" readonly>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label small fw-bold">公司名稱<span class="required-star">*</span></label>
+                <input type="text" id="vendCompanyName" class="form-control form-control-sm" required placeholder="例：台灣精工半導體元件股份有限公司">
+                <div class="invalid-feedback">請輸入廠商名稱 (必填)</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">公司英文名稱</label>
+                <input type="text" id="vendEnglishName" class="form-control form-control-sm" placeholder="例：Taiwan Precision Semi Co.">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">統一編號 (統編 8 碼)<span class="required-star">*</span></label>
+                <input type="text" id="vendTaxId" class="form-control form-control-sm" required pattern="\d{8}" maxlength="8" placeholder="例：12345678">
+                <div class="invalid-feedback">請輸入正確 8 碼統一編號 (必填)</div>
+              </div>
+
+              <!-- 窗口中文名與窗口英文名 -->
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">聯絡窗口姓名<span class="required-star">*</span></label>
+                <input type="text" id="vendContactPerson" class="form-control form-control-sm" required placeholder="例：張家榮">
+                <div class="invalid-feedback">請輸入聯絡窗口姓名 (必填)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">聯絡窗口英文名</label>
+                <input type="text" id="vendContactPersonEn" class="form-control form-control-sm" placeholder="例：Eric Chang">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">部門</label>
+                <input type="text" id="vendDepartment" class="form-control form-control-sm" placeholder="例：業務二部">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">職稱</label>
+                <input type="text" id="vendJobTitle" class="form-control form-control-sm" placeholder="例：業務協理">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">電話<span class="required-star">*</span></label>
+                <input type="text" id="vendPhone" class="form-control form-control-sm" required placeholder="例：02-8751-2233">
+                <div class="invalid-feedback">請輸入廠商電話 (必填)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">電子郵件 (Email)<span class="required-star">*</span></label>
+                <input type="email" id="vendEmail" class="form-control form-control-sm" required placeholder="例：sales@supplier.com">
+                <div class="invalid-feedback">請輸入正確格式之電子郵件 (必填)</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">付款條件<span class="required-star">*</span></label>
+                <select id="vendPaymentTerms" class="form-select form-select-sm" required>
+                  <option value="月結30天">月結30天</option>
+                  <option value="月結45天">月結45天</option>
+                  <option value="月結60天">月結60天</option>
+                  <option value="先付款後出貨">先付款後出貨</option>
+                  <option value="電匯現結">電匯現結</option>
+                  <option value="貨到付款">貨到付款</option>
+                </select>
+                <div class="invalid-feedback">請選擇付款條件</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">通訊住址<span class="required-star">*</span></label>
+                <input type="text" id="vendAddress" class="form-control form-control-sm" required placeholder="例：台北市內湖區行愛路 78 號 5 樓">
+                <div class="invalid-feedback">請輸入通訊住址 (必填)</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">備註</label>
+                <textarea id="vendNotes" class="form-control form-control-sm" rows="2" placeholder="產品供應線、交貨週期等備註..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer bg-light px-0 pb-0 mt-4">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i>儲存廠商資料</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 廠商 明細檢視 Modal (含 scrollable) -->
+  <div class="modal fade" id="vendorDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-building me-2 text-primary"></i>廠商詳細資料</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="vendorDetailContent">
+          <!-- 動態填充 -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- (C) 產品 新增/編輯 Modal (含 scrollable 與圖片上傳) -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark" id="productModalTitle">新增產品</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="productForm" novalidate onsubmit="event.preventDefault(); saveProduct();">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">產品代碼</label>
+                <input type="text" id="productIdInput" class="form-control form-control-sm bg-light" readonly>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label small fw-bold">產品名稱<span class="required-star">*</span></label>
+                <input type="text" id="prodName" class="form-control form-control-sm" required placeholder="例：企業級高效能機架式伺服器 (2U)">
+                <div class="invalid-feedback">請輸入產品名稱 (必填)</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">進貨成本 (NT$)<span class="required-star">*</span></label>
+                <input type="number" id="prodCost" class="form-control form-control-sm" min="0" required placeholder="例：85000">
+                <div class="invalid-feedback">請輸入成本且不可小於 0 (必填)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">建議售價 (NT$)</label>
+                <input type="number" id="prodPrice" class="form-control form-control-sm" min="0" placeholder="例：128000">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">單位</label>
+                <input type="text" id="prodUnit" class="form-control form-control-sm" placeholder="台 / 個 / 套 / 組 / 箱" value="台">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">廠牌</label>
+                <input type="text" id="prodBrand" class="form-control form-control-sm" placeholder="例：AdvanRugged">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">庫存數量</label>
+                <input type="number" id="prodStock" class="form-control form-control-sm" min="0" value="0">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">供應商 (來自廠商管理下拉)</label>
+                <select id="prodSupplier" class="form-select form-select-sm">
+                  <!-- 動態載入廠商清單 -->
+                </select>
+              </div>
+
+              <!-- 商品圖片改成上傳檔案 -->
+              <div class="col-12">
+                <label class="form-label small fw-bold">商品圖片上傳 (支援本地檔案上傳與即時預覽)</label>
+                <div class="input-group input-group-sm">
+                  <input type="file" id="prodImageFileInput" class="form-control" accept="image/*" onchange="handleProductImageUpload(event)">
+                  <button class="btn btn-outline-secondary" type="button" onclick="clearProductImage()">清除圖片</button>
+                </div>
+                <!-- 儲存 base64 影像資料 -->
+                <input type="hidden" id="prodImageDataUrl" value="">
+                <div id="prodImagePreviewBox" class="mt-2 p-2 bg-light rounded border d-flex align-items-center gap-3 d-none">
+                  <img id="prodImagePreviewImg" src="" alt="預覽圖" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+                  <div>
+                    <div class="small fw-bold text-dark" id="prodImageFileName">已選取圖片</div>
+                    <small class="text-muted">已轉為 Base64 格式儲存於本地端</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">規格說明</label>
+                <input type="text" id="prodSpec" class="form-control form-control-sm" placeholder="例：雙路 Intel Xeon Silver / 128GB ECC RAM / 4x 1.92TB NVMe SSD">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">詳細產品說明</label>
+                <textarea id="prodDesc" class="form-control form-control-sm" rows="2" placeholder="產品功能特點、保固條件、適用場景說明..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer bg-light px-0 pb-0 mt-4">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i>儲存產品資料</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 產品 明細檢視 Modal (含 scrollable) -->
+  <div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-box-open me-2 text-primary"></i>產品詳細資料</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="productDetailContent">
+          <!-- 動態填充 -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- (D) 報價單 新增/編輯 Modal (含報價人員名稱/聯絡電話及住址，全滾動設計) -->
+  <div class="modal fade" id="quotationModal" tabindex="-1" aria-labelledby="quotationModalTitle" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark" id="quotationModalTitle">建立報價單</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="quotationForm" novalidate onsubmit="event.preventDefault(); saveQuotation();">
+            <!-- 報價單基本資訊 -->
+            <div class="card bg-light border p-3 mb-3">
+              <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-circle-info me-2"></i>基本資料</h6>
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">報價單號</label>
+                  <input type="text" id="quotationIdInput" class="form-control form-control-sm bg-white" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">客戶名稱 (來自客戶管理下拉)<span class="required-star">*</span></label>
+                  <select id="quoteCustomerSelect" class="form-select form-select-sm" required>
+                    <!-- 動態由客戶清單填入 -->
+                  </select>
+                  <div class="invalid-feedback">請選擇客戶 (必填)</div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">報價單狀態</label>
+                  <select id="quoteStatus" class="form-select form-select-sm">
+                    <option value="草稿">草稿 (Draft)</option>
+                    <option value="已送出">已送出 (Sent)</option>
+                    <option value="已確認">已確認 (Accepted)</option>
+                  </select>
+                </div>
+
+                <!-- 選擇客戶後自動顯示其統編與電話摘要 -->
+                <div id="quoteCustomerAutoInfo" class="col-12 p-2 bg-white rounded border d-none">
+                  <!-- JS 動態帶入 -->
+                </div>
+
+                <!-- 報價人員、聯絡電話、營業住址 -->
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">報價人員名稱<span class="required-star">*</span></label>
+                  <input type="text" id="quoteSalesRep" class="form-control form-control-sm" required placeholder="業務代表姓名">
+                  <div class="invalid-feedback">請填寫報價人員 (必填)</div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">聯絡電話<span class="required-star">*</span></label>
+                  <input type="text" id="quoteSalesPhone" class="form-control form-control-sm" required placeholder="電話或手機">
+                  <div class="invalid-feedback">請填寫聯絡電話 (必填)</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">營業住址 / 報價地址<span class="required-star">*</span></label>
+                  <input type="text" id="quoteSalesAddress" class="form-control form-control-sm" required placeholder="例：台北市信義區松仁路 100 號 28 樓" value="台北市南港區軟體園區二期 H 棟 9 樓">
+                  <div class="invalid-feedback">請填寫營業住址 (必填)</div>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">報價日期</label>
+                  <input type="date" id="quoteDate" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">有效期限</label>
+                  <input type="date" id="quoteValidUntil" class="form-control form-control-sm">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">付款條件</label>
+                  <input type="text" id="quotePaymentTerms" class="form-control form-control-sm" placeholder="例：月結30天 / 先付款後出貨">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold">營業稅計算</label>
+                  <select id="quoteTaxRate" class="form-select form-select-sm">
+                    <option value="5">應稅 (加計 5% 營業稅)</option>
+                    <option value="0">零稅率 / 免稅 (0%)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 報價項目動態清單區 (可輸入多筆) -->
+            <div class="card border p-3 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="fa-solid fa-list-check me-2"></i>產品明細項目清單
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addQuotationItemRow()">
+                  <i class="fa-solid fa-plus me-1"></i>新增一筆報價項目
+                </button>
+              </div>
+
+              <!-- 桌機版欄位標頭 -->
+              <div class="d-none d-md-flex row g-2 px-3 py-2 bg-light rounded text-muted small fw-bold mb-2">
+                <div class="col-md-4">產品名稱 (來自產品管理下拉)<span class="required-star">*</span></div>
+                <div class="col-md-3">規格 / 說明</div>
+                <div class="col-md-1 text-center">單位</div>
+                <div class="col-md-2 text-center">單價 (NT$)<span class="required-star">*</span></div>
+                <div class="col-md-1 text-center">數量<span class="required-star">*</span></div>
+                <div class="col-md-1 text-end">操作</div>
+              </div>
+
+              <!-- 動態項目注入容器 -->
+              <div id="quotationItemsContainer">
+                <!-- 由 JavaScript 動態生成多筆行項目 -->
+              </div>
+            </div>
+
+            <!-- 總計試算面板 -->
+            <div class="row g-3">
+              <div class="col-md-7">
+                <label class="form-label small fw-bold">報價備註與條款</label>
+                <textarea id="quoteNotes" class="form-control form-control-sm" rows="4" placeholder="交期說明、保固條件、收款方式..."></textarea>
+              </div>
+              <div class="col-md-5">
+                <div class="card bg-light border p-3">
+                  <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">金額試算摘要</h6>
+                  <div class="d-flex justify-content-between text-muted small mb-1">
+                    <span>項目小計：</span>
+                    <span id="quoteSummarySubtotal" class="fw-bold text-dark">NT$ 0</span>
+                  </div>
+                  <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>營業稅額：</span>
+                    <span id="quoteSummaryTax" class="fw-bold text-dark">NT$ 0</span>
+                  </div>
+                  <div class="d-flex justify-content-between border-top pt-2">
+                    <span class="fw-bold fs-6 text-primary">總價合計 (NT$)：</span>
+                    <span id="quoteSummaryGrandTotal" class="fw-bold fs-5 text-primary">NT$ 0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer bg-light px-0 pb-0 mt-4">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-floppy-disk me-1"></i>儲存報價單</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 報價單 明細檢視 Modal (含 scrollable) -->
+  <div class="modal fade" id="quotationDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light no-print">
+          <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-file-lines me-2 text-primary"></i>報價單檢視</h5>
+          <div class="d-flex gap-2">
+            <button id="printQuoteDetailBtn" class="btn btn-sm btn-outline-success">
+              <i class="fa-solid fa-print me-1"></i>列印 / 另存 PDF
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body p-4 bg-light" id="quotationDetailContent">
+          <!-- 動態填充 -->
+        </div>
+        <div class="modal-footer bg-light no-print">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 報價單 正式列印預覽 Modal (含 scrollable) -->
+  <div class="modal fade" id="quotationPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light no-print">
+          <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-print me-2 text-success"></i>正式報價單預覽列印</h5>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-success text-white" onclick="triggerSystemPrint()">
+              <i class="fa-solid fa-print me-1"></i>立即列印 (Print / Save as PDF)
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body p-4 bg-light" id="quotationPreviewContent">
+          <!-- 報價單紙張樣式由 JS 產生 -->
+        </div>
+        <div class="modal-footer bg-light no-print">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       4. 全域通知訊息 (Bootstrap Toast)
+       ==================================================================== -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="actionToast" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body fs-6" id="toastMessage">
+          操作成功
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁尾宣告 -->
+  <footer class="bg-white border-top py-3 text-center text-muted small mt-auto no-print">
+    <div class="container">
+      <div><strong>鼎盛智慧科技股份有限公司</strong> © 2026 報價單管理系統 | 純前端無框架原生實作 (HTML / CSS / JS / Bootstrap 5 / Font Awesome)</div>
+      <div class="text-secondary" style="font-size: 0.75rem;">支援完全響應式 RWD 行動裝置與 A4 紙本友善列印</div>
+    </div>
+  </footer>
+
+  <!-- 本地端 JavaScript 引入 (切勿使用 CDN) -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>

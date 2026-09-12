@@ -1,0 +1,356 @@
+/* ==========================================================================
+   報價單管理系統 (Quotation Management System) - 自訂樣式表
+   - 基於 Bootstrap 5 規範擴充
+   - 包含 RWD 響應式優化、表單防呆樣式與專業列印排版
+   - 全面支援彈窗滾動軸 (Scrollable Modals) 與統一風格
+   ========================================================================== */
+
+:root {
+  --primary-color: #1e3a8a;
+  --primary-hover: #172554;
+  --secondary-color: #0f766e;
+  --dark-slate: #0f172a;
+  --light-bg: #f8fafc;
+  --card-border: #e2e8f0;
+  --text-main: #334155;
+  --text-muted: #64748b;
+  --accent-gold: #d97706;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background-color: var(--light-bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 頂部導覽列與 LOGO */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.5px;
+}
+
+.brand-logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.nav-link {
+  font-weight: 500;
+  padding: 0.6rem 1rem !important;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+/* 主容器與區塊過渡 */
+main {
+  flex: 1;
+}
+
+.tab-pane {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 統計指標卡片 */
+.stat-card {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+/* 表格與列表 */
+.table-card {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.table thead th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom: 2px solid var(--card-border);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  font-size: 0.925rem;
+}
+
+/* 代碼標籤徽章 */
+.badge-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+  border-radius: 6px;
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+/* 必填星號提示 */
+.required-star {
+  color: #dc2626;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+/* 表單即時驗證強化 */
+.form-control:focus, .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15);
+}
+
+.was-validated .form-control:invalid, .form-control.is-invalid {
+  border-color: #ef4444;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6v2.4m0 1.6h.01'/%3e%3c/svg%3e");
+}
+
+.invalid-feedback {
+  font-size: 0.825rem;
+  font-weight: 500;
+}
+
+/* 報價項目列動態卡片 (RWD 適應手機與桌機) */
+.quotation-item-row {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+  transition: background-color 0.15s ease;
+}
+
+.quotation-item-row:hover {
+  background-color: #f8fafc;
+}
+
+/* 縮圖顯示 */
+.product-thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #f1f5f9;
+}
+
+.product-thumbnail-lg {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+}
+
+/* ==========================================================================
+   彈窗滾動條強化 (解決過長內容無法滾動問題)
+   ========================================================================== */
+.modal-dialog-scrollable {
+  max-height: calc(100% - 3.5rem);
+}
+
+.modal-dialog-scrollable .modal-content {
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(88vh - 140px);
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* 自訂清晰柔和的捲動條 (Webkit) */
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f8fafc;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 報價單列印預覽專用區塊 */
+.printable-quote-paper {
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.quote-header-line {
+  border-bottom: 3px solid #1e3a8a;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.signature-box {
+  border: 1px dashed #94a3b8;
+  height: 90px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* 浮動提示 Toast */
+.toast-container {
+  z-index: 1090;
+}
+
+/* 手機版 RWD 最佳化 */
+@media (max-width: 767.98px) {
+  .printable-quote-paper {
+    padding: 1.25rem;
+  }
+  
+  .table-responsive {
+    border: 0;
+  }
+
+  .nav-link {
+    margin-bottom: 4px;
+  }
+  
+  .btn {
+    min-height: 38px;
+  }
+
+  .modal-dialog-scrollable .modal-body {
+    max-height: calc(85vh - 120px);
+    padding: 1rem !important;
+  }
+}
+
+/* 列印專用樣式 (@media print) */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 隱藏所有非列印內容 */
+  .no-print,
+  .navbar,
+  footer,
+  .modal-backdrop,
+  .btn,
+  .nav-tabs,
+  .toast-container,
+  .alert,
+  .modal-header .btn-close,
+  .modal-footer {
+    display: none !important;
+  }
+
+  /* 強制將列印用紙填滿 */
+  .modal {
+    position: static !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .modal-dialog {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+  }
+
+  .printable-quote-paper {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .table thead th {
+    background-color: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

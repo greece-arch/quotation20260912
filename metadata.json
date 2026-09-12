@@ -1,0 +1,6 @@
+{
+  "name": "報價單管理系統",
+  "description": "具備RWD響應式設計之純前端報價單管理系統，支援客戶、廠商、產品及報價單之增刪查改與即時關聯試算。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
