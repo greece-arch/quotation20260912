@@ -238,10 +238,12 @@ const INITIAL_QUOTATIONS = [
   }
 ];
 
-// 本地儲存資料倉儲 (Local State Engine)
+// 資料倉儲 (支援 PostgreSQL Cloud SQL 後端 API 同步與 LocalStorage 離線快取)
 class DataStore {
   constructor() {
+    this.apiAvailable = false;
     this.initStorage();
+    this.syncFromPostgreSQL();
   }
 
   initStorage() {
@@ -259,11 +261,84 @@ class DataStore {
     }
   }
 
+  // 與 PostgreSQL 後端 API 進行雙向同步
+  async syncFromPostgreSQL() {
+    try {
+      const healthRes = await fetch("/api/health");
+      if (!healthRes.ok) return;
+      this.apiAvailable = true;
+      this.updateDbStatusBadge(true);
+
+      // 初次嘗試播種種子資料至 Cloud SQL (若資料庫尚無資料)
+      await fetch("/api/seed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customers: this.getCustomers(),
+          vendors: this.getVendors(),
+          products: this.getProducts(),
+          quotations: this.getQuotations(),
+        }),
+      });
+
+      // 從 PostgreSQL 拉取最新資料並快取至 LocalStorage
+      const [custRes, vendRes, prodRes, quoRes] = await Promise.all([
+        fetch("/api/customers"),
+        fetch("/api/vendors"),
+        fetch("/api/products"),
+        fetch("/api/quotations"),
+      ]);
+
+      if (custRes.ok) {
+        const custs = await custRes.json();
+        if (custs && custs.length > 0) this.saveCustomersLocally(custs);
+      }
+      if (vendRes.ok) {
+        const vends = await vendRes.json();
+        if (vends && vends.length > 0) this.saveVendorsLocally(vends);
+      }
+      if (prodRes.ok) {
+        const prods = await prodRes.json();
+        if (prods && prods.length > 0) this.saveProductsLocally(prods);
+      }
+      if (quoRes.ok) {
+        const quos = await quoRes.json();
+        if (quos && quos.length > 0) this.saveQuotationsLocally(quos);
+      }
+
+      // 觸發 UI 重新渲染
+      if (typeof populateDropdowns === "function") populateDropdowns();
+      if (typeof updateDashboardStats === "function") updateDashboardStats();
+      if (typeof renderCustomerList === "function") renderCustomerList();
+      if (typeof renderVendorList === "function") renderVendorList();
+      if (typeof renderProductList === "function") renderProductList();
+      if (typeof renderQuotationList === "function") renderQuotationList();
+    } catch (err) {
+      console.log("PostgreSQL API 處於本機離線或單機靜態模式，採用 LocalStorage 離線快取儲存。");
+      this.apiAvailable = false;
+      this.updateDbStatusBadge(false);
+    }
+  }
+
+  updateDbStatusBadge(isOnline) {
+    const badge = document.getElementById("dbStatusBadge");
+    if (badge) {
+      if (isOnline) {
+        badge.className = "badge bg-success d-inline-flex align-items-center gap-1";
+        badge.innerHTML = '<i class="fa-solid fa-database"></i> PostgreSQL 連線中';
+      } else {
+        badge.className = "badge bg-secondary d-inline-flex align-items-center gap-1";
+        badge.innerHTML = '<i class="fa-solid fa-hard-drive"></i> 本地快取模式';
+      }
+    }
+  }
+
   resetDefaultData() {
     localStorage.setItem("apex_customers", JSON.stringify(INITIAL_CUSTOMERS));
     localStorage.setItem("apex_vendors", JSON.stringify(INITIAL_VENDORS));
     localStorage.setItem("apex_products", JSON.stringify(INITIAL_PRODUCTS));
     localStorage.setItem("apex_quotations", JSON.stringify(INITIAL_QUOTATIONS));
+    this.syncFromPostgreSQL();
   }
 
   getCustomers() {
@@ -273,8 +348,21 @@ class DataStore {
       return [];
     }
   }
-  saveCustomers(data) {
+  saveCustomersLocally(data) {
     localStorage.setItem("apex_customers", JSON.stringify(data));
+  }
+  saveCustomers(data) {
+    this.saveCustomersLocally(data);
+    // 異步同步至 PostgreSQL
+    if (this.apiAvailable && Array.isArray(data)) {
+      data.forEach(cust => {
+        fetch("/api/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cust),
+        }).catch(e => console.error("Sync customer to PG failed:", e));
+      });
+    }
   }
 
   getVendors() {
@@ -284,8 +372,20 @@ class DataStore {
       return [];
     }
   }
-  saveVendors(data) {
+  saveVendorsLocally(data) {
     localStorage.setItem("apex_vendors", JSON.stringify(data));
+  }
+  saveVendors(data) {
+    this.saveVendorsLocally(data);
+    if (this.apiAvailable && Array.isArray(data)) {
+      data.forEach(vend => {
+        fetch("/api/vendors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(vend),
+        }).catch(e => console.error("Sync vendor to PG failed:", e));
+      });
+    }
   }
 
   getProducts() {
@@ -295,8 +395,20 @@ class DataStore {
       return [];
     }
   }
-  saveProducts(data) {
+  saveProductsLocally(data) {
     localStorage.setItem("apex_products", JSON.stringify(data));
+  }
+  saveProducts(data) {
+    this.saveProductsLocally(data);
+    if (this.apiAvailable && Array.isArray(data)) {
+      data.forEach(prod => {
+        fetch("/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(prod),
+        }).catch(e => console.error("Sync product to PG failed:", e));
+      });
+    }
   }
 
   getQuotations() {
@@ -306,8 +418,52 @@ class DataStore {
       return [];
     }
   }
-  saveQuotations(data) {
+  saveQuotationsLocally(data) {
     localStorage.setItem("apex_quotations", JSON.stringify(data));
+  }
+  saveQuotations(data) {
+    this.saveQuotationsLocally(data);
+    if (this.apiAvailable && Array.isArray(data)) {
+      data.forEach(quo => {
+        fetch("/api/quotations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(quo),
+        }).catch(e => console.error("Sync quotation to PG failed:", e));
+      });
+    }
+  }
+
+  async deleteCustomer(id) {
+    const list = this.getCustomers().filter(c => c.id !== id);
+    this.saveCustomersLocally(list);
+    if (this.apiAvailable) {
+      fetch(`/api/customers/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(e => console.error(e));
+    }
+  }
+
+  async deleteVendor(id) {
+    const list = this.getVendors().filter(v => v.id !== id);
+    this.saveVendorsLocally(list);
+    if (this.apiAvailable) {
+      fetch(`/api/vendors/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(e => console.error(e));
+    }
+  }
+
+  async deleteProduct(id) {
+    const list = this.getProducts().filter(p => p.id !== id);
+    this.saveProductsLocally(list);
+    if (this.apiAvailable) {
+      fetch(`/api/products/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(e => console.error(e));
+    }
+  }
+
+  async deleteQuotation(id) {
+    const list = this.getQuotations().filter(q => q.id !== id);
+    this.saveQuotationsLocally(list);
+    if (this.apiAvailable) {
+      fetch(`/api/quotations/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(e => console.error(e));
+    }
   }
 
   generateId(type) {
@@ -564,8 +720,7 @@ function deleteCustomer(id) {
   }
 
   if (confirm(`確定要刪除客戶「${customer.companyName} (${customer.id})」嗎？此操作無法復原。${warningExtra}`)) {
-    const updated = store.getCustomers().filter(c => c.id !== id);
-    store.saveCustomers(updated);
+    store.deleteCustomer(id);
     showToast(`客戶 [${customer.companyName}] 已刪除。`, "danger");
     renderCustomerList();
     updateDashboardStats();
@@ -853,8 +1008,7 @@ function deleteVendor(id) {
   }
 
   if (confirm(`確定要刪除廠商「${vendor.companyName} (${vendor.id})」嗎？此操作無法復原。${warningExtra}`)) {
-    const updated = store.getVendors().filter(v => v.id !== id);
-    store.saveVendors(updated);
+    store.deleteVendor(id);
     showToast(`廠商 [${vendor.companyName}] 已刪除。`, "danger");
     renderVendorList();
     updateDashboardStats();
@@ -1215,8 +1369,7 @@ function deleteProduct(id) {
   }
 
   if (confirm(`確定要刪除產品「${product.name} (${product.id})」嗎？${warningExtra}`)) {
-    const updated = store.getProducts().filter(p => p.id !== id);
-    store.saveProducts(updated);
+    store.deleteProduct(id);
     showToast(`產品 [${product.name}] 已刪除。`, "danger");
     renderProductList();
     updateDashboardStats();
@@ -1713,8 +1866,7 @@ function deleteQuotation(id) {
   if (!quote) return;
 
   if (confirm(`確定要刪除報價單「${quote.id}」嗎？此操作無法還原。`)) {
-    const updated = store.getQuotations().filter(q => q.id !== id);
-    store.saveQuotations(updated);
+    store.deleteQuotation(id);
     showToast(`報價單 [${quote.id}] 已刪除。`, "danger");
     renderQuotationList();
     updateDashboardStats();

@@ -448,7 +448,8 @@ function renderCustomerList(keyword = "") {
             <i class="fa-solid fa-user text-muted me-1"></i>窗口：${contactDisplay} (${escapeHtml(c.jobTitle || "無職稱")})
           </div>
           <div class="small mb-2">
-            <i class="fa-solid fa-phone text-muted me-1"></i>電話：${escapeHtml(c.phone)}</div>
+            <i class="fa-solid fa-phone text-muted me-1"></i>電話：${escapeHtml(c.phone)}
+          </div>
           <div class="d-flex justify-content-end gap-1 pt-2 border-top">
             <button class="btn btn-sm btn-outline-primary" onclick="viewCustomerDetail('${c.id}')"><i class="fa-solid fa-eye me-1"></i>明細</button>
             <button class="btn btn-sm btn-outline-secondary" onclick="openCustomerModal('${c.id}')"><i class="fa-solid fa-pen-to-square me-1"></i>編輯</button>
