@@ -96,10 +96,34 @@ npm run build
 
 1. **零網路依賴（完全本地端資源）**：
    - CSS 與 JS、Font Awesome 字型圖示皆放置於本地端目錄引入，即使完全斷網（離線狀態）依然可順暢運作。
-2. **免資料庫安裝**：
-   - 資料自動持久化於瀏覽器的 `localStorage` 中，重新整理網頁資料依然留存。
-   - 若要重新體驗初始示範資料，可隨時點擊右上角「**重設示範資料**」按鈕一鍵還原。
+2. **免資料庫安裝與雙軌資料持久化**：
+   - 資料預設持久化於瀏覽器的 `localStorage` 中，重新整理網頁資料依然留存。
+   - 伺服端已整合 PostgreSQL (Cloud SQL / Neon) 資料庫，可隨時雙向儲存。
 3. **列印功能測試**：
    - 點擊任一報價單的「**列印**」按鈕，即可開啟正式 A4 規格報價單預覽，並可直接呼叫印表機或另存為 PDF。
 4. **RWD 行動版測試**：
    - 按 `F12` 開啟瀏覽器開發者工具，切換至手機（如 iPhone、Pixel）或平板視角，測試卡片式響應設計。
+
+---
+
+## 重新發布至 GitHub 指引
+
+若您要將本專案程式碼推播發布至 GitHub 儲存庫：
+
+```bash
+# 1. 初始化 Git 儲存庫（若尚未初始化）
+git init
+
+# 2. 將所有檔案加入暫存區
+git add .
+
+# 3. 提交變更
+git commit -m "feat: 移除交易管理模組與全域按鈕，優化報價單系統與GitHub/Vercel發布配置"
+
+# 4. 綁定 GitHub 遠端倉庫（請替換為您的 GitHub 倉庫 URL）
+git remote add origin https://github.com/<您的用戶名>/<您的倉庫名>.git
+
+# 5. 推送至主分支
+git branch -M main
+git push -u origin main
+```
