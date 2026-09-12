@@ -324,11 +324,11 @@ class DataStore {
     const badge = document.getElementById("dbStatusBadge");
     if (badge) {
       if (isOnline) {
-        badge.className = "badge bg-success d-inline-flex align-items-center gap-1";
-        badge.innerHTML = '<i class="fa-solid fa-database"></i> PostgreSQL 連線中';
+        badge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 d-inline-flex align-items-center gap-2 py-2 px-3";
+        badge.innerHTML = '<span class="status-indicator-dot"></span><span id="dbStatusText" class="fw-semibold">雲端資料庫已連線 (即時同步)</span>';
       } else {
-        badge.className = "badge bg-secondary d-inline-flex align-items-center gap-1";
-        badge.innerHTML = '<i class="fa-solid fa-hard-drive"></i> 本地快取模式';
+        badge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 d-inline-flex align-items-center gap-2 py-2 px-3";
+        badge.innerHTML = '<span class="status-indicator-dot"></span><span id="dbStatusText" class="fw-semibold">本地安全快取 (運作正常)</span>';
       }
     }
   }

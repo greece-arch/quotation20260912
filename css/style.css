@@ -141,12 +141,32 @@ main {
   border: 1px solid #c7d2fe;
 }
 
-/* 必填星號提示 */
-.required-star {
-  color: #dc2626;
-  font-weight: bold;
-  margin-left: 2px;
+/* 綠燈狀態指示點與呼吸燈效果 */
+.status-indicator-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: pulse-green 2s infinite;
 }
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
 
 /* 表單即時驗證強化 */
 .form-control:focus, .form-select:focus {

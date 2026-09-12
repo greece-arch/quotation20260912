@@ -39,8 +39,8 @@
 
       <!-- 導覽功能分頁與系統操作按鈕 -->
       <div class="collapse navbar-collapse" id="navbarContent">
-        <!-- 主功能選單分頁 -->
-        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 nav-pills" id="systemTab" role="tablist">
+        <!-- 主功能選單分頁 (置左對齊) -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 nav-pills" id="systemTab" role="tablist">
           <li class="nav-item me-1" role="presentation">
             <button class="nav-link active text-white" id="tab-quotations" data-bs-toggle="pill" data-bs-target="#pane-quotations" type="button" role="tab" aria-selected="true">
               <i class="fa-solid fa-file-lines me-1"></i>報價單管理
@@ -63,10 +63,11 @@
           </li>
         </ul>
 
-        <!-- 右側狀態資訊 -->
+        <!-- 右側系統與儲存狀態 (綠燈狀態指示) -->
         <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-          <span id="dbStatusBadge" class="badge bg-secondary d-inline-flex align-items-center gap-1" title="資料庫連線狀態">
-            <i class="fa-solid fa-hard-drive"></i> 本地快取模式
+          <span id="dbStatusBadge" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 d-inline-flex align-items-center gap-2 py-2 px-3" title="儲存與資料庫連線狀態">
+            <span class="status-indicator-dot"></span>
+            <span id="dbStatusText" class="fw-semibold">系統正常運作 (快取同步中)</span>
           </span>
         </div>
       </div>
